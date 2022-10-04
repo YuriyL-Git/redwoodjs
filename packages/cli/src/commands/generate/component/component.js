@@ -1,45 +1,57 @@
-import { transformTSToJS } from '../../../lib'
+import { transformTSToJS } from "../../../lib";
 import {
   templateForComponentFile,
-  createYargsForComponentGeneration,
-} from '../helpers'
+  createYargsForComponentGeneration
+} from "../helpers";
 
-const REDWOOD_WEB_PATH_NAME = 'components'
+const REDWOOD_WEB_PATH_NAME = "components";
 
 export const files = ({ name, typescript = false, ...options }) => {
-  const extension = typescript ? '.tsx' : '.js'
+  const extension = typescript ? ".tsx" : ".js";
   const componentFile = templateForComponentFile({
     name,
     webPathSection: REDWOOD_WEB_PATH_NAME,
     extension,
-    generator: 'component',
-    templatePath: 'component.tsx.template',
-  })
+    generator: "component",
+    templatePath: "component.tsx.template"
+  });
   const testFile = templateForComponentFile({
     name,
     extension: `.test${extension}`,
     webPathSection: REDWOOD_WEB_PATH_NAME,
-    generator: 'component',
-    templatePath: 'test.tsx.template',
-  })
+    generator: "component",
+    templatePath: "test.tsx.template"
+  });
   const storiesFile = templateForComponentFile({
     name,
     extension: `.stories${extension}`,
     webPathSection: REDWOOD_WEB_PATH_NAME,
-    generator: 'component',
+    generator: "component",
     // Using two different template files here because we have a TS-specific
     // information in a comment in the .tsx template
-    templatePath: typescript ? 'stories.tsx.template' : 'stories.js.template',
-  })
+    templatePath: typescript ? "stories.tsx.template" : "stories.js.template"
+  });
 
-  const files = [componentFile]
+  const stylesFile = templateForComponentFile({
+    name,
+    extension: `.styles.ts`,
+    webPathSection: REDWOOD_WEB_PATH_NAME,
+    generator: "component",
+    // Using two different template files here because we have a TS-specific
+    // information in a comment in the .tsx template
+    templatePath: "styles.ts.template"
+  });
+
+  const files = [componentFile];
   if (options.stories) {
-    files.push(storiesFile)
+    files.push(storiesFile);
   }
 
   if (options.tests) {
-    files.push(testFile)
+    files.push(testFile);
   }
+
+  files.push(stylesFile);
 
   // Returns
   // {
@@ -47,18 +59,18 @@ export const files = ({ name, typescript = false, ...options }) => {
   //    "path/to/fileB": "<<<template>>>",
   // }
   return files.reduce((acc, [outputPath, content]) => {
-    const template = typescript ? content : transformTSToJS(outputPath, content)
+    const template = typescript ? content : transformTSToJS(outputPath, content);
 
     return {
       [outputPath]: template,
-      ...acc,
-    }
-  }, {})
-}
+      ...acc
+    };
+  }, {});
+};
 
-export const description = 'Generate a component'
+export const description = "Generate a component";
 
 export const { command, builder, handler } = createYargsForComponentGeneration({
-  componentName: 'component',
-  filesFn: files,
-})
+  componentName: "component",
+  filesFn: files
+});
